@@ -10,7 +10,7 @@ from model import create_model
 from driver import Driver, dist_pytorch
 
 class Trainer:
-    def __init__(self, driver, adapter, evaluator, training_state, device, config):
+    def __init__(self, driver, adapter, evaluator, tokenizer, training_state, device, config):
         super(Trainer, self).__init__()
         self.driver = driver
         self.adapter = adapter
@@ -18,12 +18,17 @@ class Trainer:
         self.device = device
         self.config = config
         self.evaluator = evaluator
+        self.tokenizer = tokenizer
 
     def init(self):
         device = torch.device(self.config.device)
         dist_pytorch.main_proc_print("Init progress: ")
         self.model = create_model()
         self.model.to(self.device)
+
+        embedding_size = self.model.get_input_embeddings().weight.shape[0]
+        if len(tokenizer) > embedding_size:
+            self.model.resize_token_embeddings(len(tokenizer))
 
     def train_one_epoch(self, train_dataloader):
         model = self.model

@@ -20,7 +20,6 @@ def prepare_raw_dataset(config):
         config.dataset_name,
         config.dataset_config_name,
         cache_dir=config.cache_dir,
-        streaming=config.streaming,
     )
     return raw_dataset
     # if "validation" not in raw_dataset.keys():

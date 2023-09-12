@@ -51,7 +51,7 @@ def main() -> Tuple[Any, Any]:
     tokenizer = create_tokenizer
     train_dataset = RobertaDataset(train_dataset, tokenizer)
 
-    raw_dataset = 
+    raw_dataset = prepare_raw_dataset(config)
 
     train_dataloader = build_train_dataloader(train_dataset, config)
 
@@ -80,7 +80,77 @@ def main() -> Tuple[Any, Any]:
      
     # processing the datasets.
     if config.do_train:
-        column_names = list(raw_dataset)
+        column_names = list(raw_dataset["train"].features)
+    else:
+        column_names = list(raw_dataset["validation"].features)
+    text_column_name = "text" if "text"in column_names else column_names[0]
+
+    if data_args.max_seq_length is None:
+        max_seq_length = tokenizer.model_max_length
+        if max_seq_length > 1024:
+            logger.warning(
+                "The chosen tokenizer supports a `model_max_length` that is longer than the default `block_size` value"
+                " of 1024. If you would like to use a longer `block_size` up to `tokenizer.model_max_length` you can"
+                " override this default with `--block_size xxx`."
+            )
+            max_seq_length = 1024
+    else:
+        if data_args.max_seq_length > tokenizer.model_max_length:
+            logger.warning(
+                f"The max_seq_length passed ({data_args.max_seq_length}) is larger than the maximum length for the"
+                f"model ({tokenizer.model_max_length}). Using max_seq_length={tokenizer.model_max_length}."
+            )
+        max_seq_length = min(data_args.max_seq_length, tokenizer.model_max_length)   
+
+    padding = "max_length" if config.pad_to_max_length else False
+
+    def tokenize_function(examples):
+        # Remove empty lines
+        examples[text_column_name] = [
+            line for line in examples[text_column_name] if len(line) > 0 and not line.isspace()
+        ]
+        tokenizer = tokenizer(
+            examples[text_column_name],
+            padding=padding,
+            truncation=True,
+            max_length=max_seq_length,
+            return_special_tokens_mask=True,
+        )
+        return tokenizer
+
+    tokenized_datasets = raw_dataset.map(
+        tokenize_function,
+        batched=True,
+        num_proc=config.preprocessing_num_workers,
+        remove_columns=[text_column_name],
+        desc="Running tokenizer on dataset line_by_line."
+    )
+
+    if config.do_train:
+        if "train" not in tokenized_datasets:
+            raise ValueError("--do_train requires a train dataset.")
+        train_dataset = tokenized_datasets["train"]
+        if config.max_train_samples is not None:
+            max_train_samples = min(len(train_dataset), config.max_train_samples)
+            train_dataset = train_dataset.select(range(max_train_samples))
+    
+    if config.do_eval:
+        if "validation" not in tokenized_datasets:
+            raise ValueError("--do_eval requires a validation dataset.")
+        eval_dataset = tokenized_datasets["validation"]
+        if config.max_eval_samples is not None:
+            max_eval_samples = min(len(eval_dataset), config.max_eval_samples)
+            eval_dataset = eval_dataset.select(range(max_eval_samples))
+        
+        def preprocess_logits_for_metrics(logits, labels):
+            if isinstance(logtis, tuple):
+                logits = logits[0]
+            return logits.argmax(dim=-1)
+    
+    metric = evaluate.load("accuracy")
+    
+
+
 
     # 设置分布式环境
 
