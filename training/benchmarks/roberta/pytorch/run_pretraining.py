@@ -19,7 +19,8 @@ import config
 from driver import Event, dist_pytorch
 from driver.helper import InitHelper
 
-from dataloaders.dataloader import build_train_dataloader
+from dataloaders.dataloader import prepare_train_dataset, build_train_dataloader \
+, prepare_raw_dataset
 
 from train import trainer_adapter
 from train.evaluator import Evaluator
@@ -46,11 +47,18 @@ def main() -> Tuple[Any, Any]:
     init_start_time = logger.previous_log_time  # init起始时间，单位ms
 
     # 构建数据集
+    train_dataset = prepare_train_dataset(config)
+    tokenizer = create_tokenizer
+    train_dataset = RobertaDataset(train_dataset, tokenizer)
 
-    train_dataset = build_train_dataset(config)
-    eval_dataset = build_eval_dataset(config)
+    raw_dataset = 
+
     train_dataloader = build_train_dataloader(train_dataset, config)
-    eval_dataloader = build_eval_dataloader(eval_dataset, config)
+
+    # train_dataset = build_train_dataset(config)
+    # eval_dataset = build_eval_dataset(config)
+    # train_dataloader = build_train_dataloader(train_dataset, config)
+    # eval_dataloader = build_eval_dataloader(eval_dataset, config)
 
     seed = config.seed
 
@@ -58,6 +66,23 @@ def main() -> Tuple[Any, Any]:
 
     # 创建TrainingState对象
     training_state = TrainingState()
+
+    trainer = Trainer(
+        driver=model_driver,
+        adapter=trainer_adapter,
+        evaluator=evaluator,
+        tokenizer=tokenizer,
+        training_state=training_state,
+        device=config.device,
+        config=config,
+    )
+    training_state._trainer = trainer
+     
+    # processing the datasets.
+    if config.do_train:
+        column_names = list(raw_dataset)
+
+    # 设置分布式环境
 
 
 if __name__ == "__main__":

@@ -12,6 +12,9 @@ cudnn_deterministic: bool = True
 # =========================================================
 # data
 # =========================================================
+dataset_name: str = "wikitext"
+dataset_config_name: str = "wikitext-2-raw-v1"
+language: str = "en"
 train_data: str = "train"
 eval_data: str = "val"
 
@@ -46,11 +49,14 @@ fp16 = False
 distributed: bool = True
 warmup = 0.1
 
+
+
 # =========================================================
 # utils
 # =========================================================
 seed: int = 0
 dist_backend: str = 'nccl'
+preprocessing_num_workers: int = 4
 num_workers: int = 4
 device: str = None
 
