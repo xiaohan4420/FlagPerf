@@ -26,6 +26,7 @@ from train import trainer_adapter
 from train.evaluator import Evaluator
 from train.trainer import Trainer
 from train.training_state import TrainingState
+from model import create_tokenizer
 
 logger = None
 
@@ -48,8 +49,8 @@ def main() -> Tuple[Any, Any]:
 
     # 构建数据集
     train_dataset = prepare_train_dataset(config)
-    tokenizer = create_tokenizer
-    train_dataset = RobertaDataset(train_dataset, tokenizer)
+    tokenizer = create_tokenizer()
+    # train_dataset = RobertaDataset(train_dataset, tokenizer)
 
     raw_dataset = prepare_raw_dataset(config)
 
@@ -66,6 +67,10 @@ def main() -> Tuple[Any, Any]:
 
     # 创建TrainingState对象
     training_state = TrainingState()
+
+    # init evaluator
+    evaluator = Evaluator(config)
+    evaluator.init("accuracy")
 
     trainer = Trainer(
         driver=model_driver,
@@ -147,10 +152,6 @@ def main() -> Tuple[Any, Any]:
                 logits = logits[0]
             return logits.argmax(dim=-1)
     
-    metric = evaluate.load("accuracy")
-    
-
-
 
     # 设置分布式环境
 

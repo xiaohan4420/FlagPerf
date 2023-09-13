@@ -1,4 +1,4 @@
-class Evaluator:
+import evaluate
 from transformers import (
     DataCollatorForLanguageModeling,
 )
@@ -18,8 +18,8 @@ class Evaluator:
         self.confi = config
         self.metric
     
-    def init(self):
-        self.metric = evaluate.load("accuracy")
+    def init(self, metric_name: str):
+        self.metric = evaluate.load(metric_name)
     
     def preprocess_logits_for_metrics(logits, labels):
         if isinstance(logits, tuple):
