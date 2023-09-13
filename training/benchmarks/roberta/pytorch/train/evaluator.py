@@ -18,7 +18,7 @@ class Evaluator:
         self.confi = config
         self.metric
     
-    def init(self, metric_name: str):
+    def reset(self, metric_name: str):
         self.metric = evaluate.load(metric_name)
     
     def preprocess_logits_for_metrics(logits, labels):
@@ -37,3 +37,4 @@ class Evaluator:
             predictions=preds, 
             references=labels
             )
+    
