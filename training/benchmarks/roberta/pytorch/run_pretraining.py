@@ -19,8 +19,8 @@ import config
 from driver import Event, dist_pytorch
 from driver.helper import InitHelper
 
-from dataloaders.dataloader import prepare_train_dataset, build_train_dataloader \
-, prepare_raw_dataset
+from dataloaders.dataloader import prepare_raw_dataset, \
+preprocessing_datasets, prepare_train_dataset, prepare_eval_dataset
 
 from train import trainer_adapter
 from train.evaluator import Evaluator
@@ -45,22 +45,20 @@ def main() -> Tuple[Any, Any]:
 
     # logger
     logger = model_driver.logger
-    init_start_time = logger.previous_log_time  # init起始时间，单位ms
+    
+    # init起始时间，单位ms
+    init_start_time = logger.previous_log_time  
 
     # 构建数据集
-    train_dataset = prepare_train_dataset(config)
-    tokenizer = create_tokenizer()
-    # train_dataset = RobertaDataset(train_dataset, tokenizer)
+    raw_datasets = prepare_raw_dataset(config)
 
-    raw_dataset = prepare_raw_dataset(config)
+    tokenizer = create_tokenizer(config)
 
-    train_dataloader = build_train_dataloader(train_dataset, config)
+    tokenized_datasets = preprocessing_datasets(config, tokenizer, raw_datasets)
+    train_dataset = prepare_train_dataset(config, tokenized_datasets)
+    eval_dataset = prepare_eval_dataset(config, tokenized_datasets)
 
-    # train_dataset = build_train_dataset(config)
-    # eval_dataset = build_eval_dataset(config)
-    # train_dataloader = build_train_dataloader(train_dataset, config)
-    # eval_dataloader = build_eval_dataloader(eval_dataset, config)
-
+    # 训练前确定seed
     seed = config.seed
 
     init_helper.set_seed(seed, model_driver.config.vendor)

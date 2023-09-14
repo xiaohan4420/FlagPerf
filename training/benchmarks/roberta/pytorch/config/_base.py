@@ -6,6 +6,7 @@ data_dir: str = None
 name: str = "roberta"
 cudnn_benchmark: bool = False
 cudnn_deterministic: bool = True
+cache_dir: str = "./cache"
 
 # Optional parameters
 
