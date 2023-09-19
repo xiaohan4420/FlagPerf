@@ -1,6 +1,8 @@
 import torch
 from datasets import load_dataset
 
+from torch.utils.data import Dataloader
+
 
 # class RobertaDataset(torch.utils.data.Dataset):
 #     def __init__(self, dataset, tokenizer):
@@ -78,3 +80,19 @@ def prepare_eval_dataset(config, tokenized_datasets):
             max_eval_samples = min(len(eval_dataset), config.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
     return eval_dataset
+
+def build_train_dataloader(config, train_dataset):
+    train_dataloader = Dataloader(
+        train_dataset,
+        batch_size=config.train_batch_size,
+        shuffle=True,
+    )
+    return train_dataloader
+
+def build_eval_dataloader(config, eval_dataset):
+    eval_dataloader = Dataloader(
+        eval_dataset,
+        batch_size=config.eval_batch_size,
+        shuffle=True,
+    )
+    return eval_dataloader

@@ -12,14 +12,16 @@ def my_collator(config, tokenizer):
         mlm_probability=config.mlm_probability,
         pad_to_multiple_of=8 if pad_to_multiple_of_8 else None,
     )
+    return data_collator
 
 class Evaluator:
-    def __init__(self, config):
-        self.confi = config
-        self.metric
-    
-    def reset(self, metric_name: str):
-        self.metric = evaluate.load(metric_name)
+    def __init__(self, config, metric_name):
+        self.config = config
+        self.metric_name = metric_name
+        self.metric = evaluate.load(self.metric_name)
+
+    def reset(self):
+        self.metric = evaluate.load(self.metric_name)
     
     def preprocess_logits_for_metrics(logits, labels):
         if isinstance(logits, tuple):

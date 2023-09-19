@@ -46,6 +46,7 @@ target_mAP: float = 0.35
 max_epoch: int = 26
 
 do_train = True
+do_eval = True
 fp16 = False
 distributed: bool = True
 warmup = 0.1
@@ -66,6 +67,7 @@ device: str = None
 # =========================================================
 # for driver
 # =========================================================
+pad_to_max_length: bool = True
 local_rank: int = -1
 use_env: bool = True
 log_freq: int = 100

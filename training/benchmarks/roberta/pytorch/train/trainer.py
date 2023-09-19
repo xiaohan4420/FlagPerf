@@ -27,7 +27,7 @@ class Trainer:
     def init(self):
         device = torch.device(self.config.device)
         dist_pytorch.main_proc_print("Init progress: ")
-        self.model = create_model()
+        self.model = create_model(self.config)
         self.model.to(self.device)
 
         self.optimizer = create_optimizer(self.model, self.config)
