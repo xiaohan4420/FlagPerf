@@ -11,7 +11,7 @@ from model import create_model
 from optimizers import create_optimizer
 from schedulers import create_scheduler
 
-from driver import Driver, dist_pytorch
+from driver import Driver, Event, dist_pytorch
 
 class Trainer:
     def __init__(self, driver, adapter, evaluator, tokenizer, training_state, device, config):
@@ -39,6 +39,7 @@ class Trainer:
 
     def train_one_epoch(self, train_dataloader):
         model = self.model
+        driver = self.driver
         optimizer = self.optimizer
         data_loader = train_dataloader
         device = self.device
@@ -61,14 +62,32 @@ class Trainer:
         # header = 'Epoch: [{}]'.format(epoch)
 
         for step, batch in enumerate(data_loader):
-            outputs = model(**batch)
-            loss = outputs.loss
+            state.global_steps += 1
+            self.train_one_step(batch)
 
             optimizer.step()
             self.lr_scheduler.step()
             optimizer.zero_grad()
 
             print(f'Loss: {str(float(loss))}')
+        
+        driver.event(Event.EPOCH_END, state.epoch)
+        eval_start = time.time()
+        state.acc = self.evaluator.evaluate(self)
+        eval_result = dict(
+
+        )
+        driver.event(Event.EVALUATE, eval_result)
+        self.detect_training_status(state)
+    
+    def train_one_step(self, batch):
+        state = self.training_state
+        self.model.train()
+
+        outputs = self.model(**batch)
+
+        loss = outputs["loss"].item()
+        state.loss = loss
 
     def evaluate(self, model, data_loader, device):
         self.model.eval()

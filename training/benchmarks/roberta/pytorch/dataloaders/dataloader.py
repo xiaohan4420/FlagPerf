@@ -4,20 +4,6 @@ from datasets import load_dataset
 from torch.utils.data import Dataloader
 
 
-# class RobertaDataset(torch.utils.data.Dataset):
-#     def __init__(self, dataset, tokenizer):
-#         self.dataset = dataset
-#         self.tokenizer = tokenizer
-    
-#     def __getitem__(self, index):
-#         example = self.dataset[index]
-#         text = example["premise"]
-#         input_ids = self.tokenizer.encode(text, add_special_tokens, padding="max_length")
-#         return torch.tensor(input_ids)
-    
-#     def __len__(self):
-#         return len(self.dataset)
-
 def prepare_raw_dataset(config):
     raw_dataset = load_dataset(
         config.dataset_name,
@@ -25,12 +11,6 @@ def prepare_raw_dataset(config):
         cache_dir=config.cache_dir,
     )
     return raw_dataset
-    # if "validation" not in raw_dataset.keys():
-    #     raw_dataset["validation"] = load_dataset(
-    #         config.dataset_name,
-    #         config.dataset_config_name,
-    #         split=f"train[:{config.}]"
-    #     )
 
 def preprocessing_datasets(config, tokenizer, raw_datasets):
     column_names = list(raw_datasets["train"].features)

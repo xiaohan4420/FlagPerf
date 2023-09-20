@@ -101,6 +101,9 @@ def main() -> Tuple[Any, Any]:
     padding = "max_length" if config.pad_to_max_length else False
 
     # 设置分布式环境
+    dist_pytorch.barrier(config.vendor)
+    trainer.init(train_dataloader)
+    dist_pytorch.barrier(config.vendor)
 
     # init eval:
     init_evaluation_start = time.time()
@@ -113,6 +116,9 @@ def main() -> Tuple[Any, Any]:
         return config, training_state
     
     # TRAIN_START
+    dist_pytorch.barrier(config.vendor)
+    model_driver.event(Event.TRAIN_START)
+    train_start_time = time.time()
 
     # 训练过程
     epoch = 0

@@ -1,3 +1,7 @@
+import os
+
+import torch
+
 import evaluate
 from transformers import (
     DataCollatorForLanguageModeling,
@@ -15,6 +19,7 @@ def my_collator(config, tokenizer):
     return data_collator
 
 class Evaluator:
+    """Evaluator"""
     def __init__(self, config, metric_name):
         self.config = config
         self.metric_name = metric_name
